@@ -35,12 +35,9 @@ export const createDrizzleClient = (): dbClient => {
 
   const pool = new Pool({
     connectionString,
-    ssl: process.env.NODE_ENV === 'production' 
-      ? true 
-      : {
-          rejectUnauthorized: false,
-        },
-    // Reintentar conexión en caso de error
+    ssl: {
+      rejectUnauthorized: false,
+    },
     max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
