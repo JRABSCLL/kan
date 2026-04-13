@@ -46,10 +46,5 @@ export const createDrizzleClient = (): dbClient => {
     connectionTimeoutMillis: 2000,
   });
 
-  // Manejo de errores del pool
-  pool.on("error", (err) => {
-    log.error("Pool error:", err);
-  });
-
   return drizzlePg(pool, { schema }) as dbClient;
 };
