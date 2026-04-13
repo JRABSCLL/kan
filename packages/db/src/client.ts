@@ -35,9 +35,20 @@ export const createDrizzleClient = (): dbClient => {
 
   const pool = new Pool({
     connectionString,
-    ssl: {
-      rejectUnauthorized: false,
-    },
+    ssl: process.env.NODE_ENV === 'production' 
+      ? true 
+      : {
+          rejectUnauthorized: false,
+        },
+    // Reintentar conexión en caso de error
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  });
+
+  // Manejo de errores del pool
+  pool.on("error", (err) => {
+    log.error("Pool error:", err);
   });
 
   return drizzlePg(pool, { schema }) as dbClient;
