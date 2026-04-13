@@ -35,6 +35,9 @@ export const createDrizzleClient = (): dbClient => {
 
   const pool = new Pool({
     connectionString,
+    ssl: {
+      rejectUnauthorized: false,
+    },
   });
 
   return drizzlePg(pool, { schema }) as dbClient;
