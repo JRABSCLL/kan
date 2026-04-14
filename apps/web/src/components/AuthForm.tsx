@@ -429,6 +429,7 @@ export function Auth({ setIsMagicLinkSent, isSignUp }: AuthProps) {
           </div>
           <div className="mt-[1.5rem] flex items-center gap-4">
             <Button
+              type="submit"
               isLoading={isLoginWithEmailPending}
               fullWidth
               size="lg"
