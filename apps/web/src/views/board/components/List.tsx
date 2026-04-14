@@ -9,8 +9,7 @@ import {
   HiOutlineTrash,
 } from "react-icons/hi2";
 
-import { authClient } from "@kan/auth/client";
-
+import { useSession } from "~/hooks/useSession";
 import Dropdown from "~/components/Dropdown";
 import { Tooltip } from "~/components/Tooltip";
 import { usePermissions } from "~/hooks/usePermissions";
@@ -45,7 +44,7 @@ export default function List({
 }: ListProps) {
   const { openModal } = useModal();
   const { canCreateCard, canEditList, canDeleteList } = usePermissions();
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSession();
   const isCreator = list.createdBy && session?.user.id === list.createdBy;
   const canEdit = canEditList || isCreator;
   const canDrag = canEditList || isCreator;

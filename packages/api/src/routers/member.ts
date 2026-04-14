@@ -140,28 +140,9 @@ export const memberRouter = createTRPCRouter({
           code: "INTERNAL_SERVER_ERROR",
         });
 
-      const { status } = await ctx.auth.api.signInMagicLink({
-        email: input.email,
-        callbackURL: `/boards?type=invite&memberPublicId=${invite.publicId}`,
-      });
-
-      if (!status) {
-        console.error("Failed to send magic link invitation:", {
-          email: input.email,
-          callbackURL: `/boards?type=invite&memberPublicId=${invite.publicId}`,
-        });
-
-        await memberRepo.softDelete(ctx.db, {
-          memberId: invite.id,
-          deletedAt: new Date(),
-          deletedBy: userId,
-        });
-
-        throw new TRPCError({
-          message: `Failed to send magic link invitation to user with email ${input.email}.`,
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      // Note: Magic link invitation emails are disabled.
+      // Users can be invited by sharing the invite link directly.
+      // TODO: Implement email notifications using Supabase or a separate email service if needed.
 
       return invite;
     }),

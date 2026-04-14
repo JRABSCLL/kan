@@ -3,8 +3,7 @@ import { t } from "@lingui/core/macro";
 import { env } from "next-runtime-env";
 import { useEffect, useState } from "react";
 
-import { authClient } from "@kan/auth/client";
-
+import { useSession } from "~/hooks/useSession";
 import Button from "~/components/Button";
 import LoadingSpinner from "~/components/LoadingSpinner";
 import { PageHead } from "~/components/PageHead";
@@ -16,8 +15,7 @@ export default function InvitePage() {
   const { code } = router.query;
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { data: session, isPending: isSessionLoading } =
-    authClient.useSession();
+  const { data: session, isPending: isSessionLoading } = useSession();
 
   const isCloudEnv = env("NEXT_PUBLIC_KAN_ENV") === "cloud";
 

@@ -5,8 +5,7 @@ import { Trans } from "@lingui/react/macro";
 import { env } from "next-runtime-env";
 import { useState } from "react";
 
-import { authClient } from "@kan/auth/client";
-
+import { useSession } from "~/hooks/useSession";
 import { Auth } from "~/components/AuthForm";
 import { PageHead } from "~/components/PageHead";
 import PatternedBackground from "~/components/PatternedBackground";
@@ -19,7 +18,7 @@ export default function SignUpPage() {
 
   const redirect = useSearchParams().get("next");
 
-  const { data } = authClient.useSession();
+  const { data } = useSession();
 
   if (data?.user.id) router.push("/boards");
 

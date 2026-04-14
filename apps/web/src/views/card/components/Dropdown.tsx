@@ -6,8 +6,7 @@ import {
   HiOutlineTrash,
 } from "react-icons/hi2";
 
-import { authClient } from "@kan/auth/client";
-
+import { useSession } from "~/hooks/useSession";
 import Dropdown from "~/components/Dropdown";
 import { usePermissions } from "~/hooks/usePermissions";
 import { useModal } from "~/providers/modal";
@@ -27,7 +26,7 @@ export default function CardDropdown({
   const { openModal } = useModal();
   const { showPopup } = usePopup();
   const { canEditCard, canDeleteCard } = usePermissions();
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSession();
   const isCreator = cardCreatedBy && session?.user.id === cardCreatedBy;
 
   const handleCopyCardLink = async () => {

@@ -12,8 +12,7 @@ import {
   HiLockClosed,
 } from "react-icons/hi2";
 
-import { authClient } from "@kan/auth/client";
-
+import { useSession, signOut } from "~/hooks/useSession";
 import Button from "~/components/Button";
 import Input from "~/components/Input";
 import LoadingSpinner from "~/components/LoadingSpinner";
@@ -75,7 +74,7 @@ export default function WorkspaceNameView() {
       ? t`This URL is reserved`
       : undefined;
 
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSession();
   const { data: user } = api.user.getUser.useQuery(undefined, {
     enabled: !!session?.user,
   });
@@ -358,7 +357,7 @@ export default function WorkspaceNameView() {
         </div>
       </div>
       {!hasExistingWorkspace && (
-        <Button variant="ghost" onClick={() => authClient.signOut()}>
+        <Button variant="ghost" onClick={() => signOut()}>
           {t`Sign out`}
         </Button>
       )}

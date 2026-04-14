@@ -6,8 +6,7 @@ import { useForm } from "react-hook-form";
 import { HiXMark } from "react-icons/hi2";
 import { IoChevronForwardSharp } from "react-icons/io5";
 
-import { authClient } from "@kan/auth/client";
-
+import { useSession } from "~/hooks/useSession";
 import Avatar from "~/components/Avatar";
 import Editor from "~/components/Editor";
 import FeedbackModal from "~/components/FeedbackModal";
@@ -49,7 +48,7 @@ interface FormValues {
 export function CardRightPanel({ isTemplate }: { isTemplate?: boolean }) {
   const router = useRouter();
   const { canEditCard } = usePermissions();
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSession();
   const cardId = Array.isArray(router.query.cardId)
     ? router.query.cardId[0]
     : router.query.cardId;
@@ -176,7 +175,7 @@ export default function CardPage({ isTemplate }: { isTemplate?: boolean }) {
   const { showPopup } = usePopup();
   const { workspace } = useWorkspace();
   const { canEditCard } = usePermissions();
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSession();
   const [activeChecklistForm, setActiveChecklistForm] = useState<string | null>(
     null,
   );

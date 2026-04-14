@@ -49,6 +49,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.5.2",
     "@kan/auth": "workspace:*",
     "@kan/db": "workspace:*",
     "@kan/email": "workspace:^",
