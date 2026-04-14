@@ -6,8 +6,7 @@ import { useState } from "react";
 import { HiUser } from "react-icons/hi2";
 import { twMerge } from "tailwind-merge";
 
-import { authClient } from "@kan/auth/client";
-
+import { useSession, signOut } from "~/hooks/useSession";
 import Button from "~/components/Button";
 import { api } from "~/utils/api";
 
@@ -49,7 +48,7 @@ export default function SelectPlanView() {
   );
   const returnUrl = searchParams.get("returnUrl") ?? "/boards";
   const { data: workspaces } = api.workspace.all.useQuery();
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSession();
   const { data: user } = api.user.getUser.useQuery(undefined, {
     enabled: !!session?.user,
   });
@@ -280,7 +279,7 @@ export default function SelectPlanView() {
         </div>
       </div>
       {!hasExistingWorkspace && (
-        <Button variant="ghost" onClick={() => authClient.signOut()}>
+        <Button variant="ghost" onClick={() => signOut()}>
           {t`Sign out`}
         </Button>
       )}

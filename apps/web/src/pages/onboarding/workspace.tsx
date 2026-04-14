@@ -2,14 +2,13 @@ import { useRouter } from "next/navigation";
 import { env } from "next-runtime-env";
 import { useEffect } from "react";
 
-import { authClient } from "@kan/auth/client";
-
+import { useSession } from "~/hooks/useSession";
 import { PageHead } from "~/components/PageHead";
 import WorkspaceDetailsView from "~/views/onboarding/workspace-details";
 
 export default function WorkspaceDetailsPage() {
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, isPending } = useSession();
 
   useEffect(() => {
     if (!isPending && !session?.user) router.push("/login");

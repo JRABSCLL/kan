@@ -10,8 +10,9 @@ import {
 import { twMerge } from "tailwind-merge";
 
 import type { Subscription } from "@kan/shared/utils";
-import { authClient } from "@kan/auth/client";
 import { getSubscriptionByPlan, hasUnlimitedSeats } from "@kan/shared/utils";
+
+import { useSession } from "~/hooks/useSession";
 
 import Avatar from "~/components/Avatar";
 import Button from "~/components/Button";
@@ -40,7 +41,7 @@ export default function MembersPage() {
     { enabled: !!workspace.publicId && workspace.publicId.length >= 12 },
   );
 
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSession();
 
   const { canEditMember } = usePermissions();
 

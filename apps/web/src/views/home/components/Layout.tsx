@@ -1,7 +1,6 @@
 import { useTheme } from "next-themes";
 
-import { authClient } from "@kan/auth/client";
-
+import { useSession } from "~/hooks/useSession";
 import PatternedBackground from "~/components/PatternedBackground";
 import Footer from "./Footer";
 import Header from "./Header";
@@ -9,7 +8,7 @@ import Header from "./Header";
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme();
 
-  const { data: session } = authClient.useSession();
+  const { data: session } = useSession();
 
   const isLoggedIn = !!session?.user;
 

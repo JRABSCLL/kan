@@ -21,8 +21,7 @@ import type {
   GetCardActivitiesOutput,
   GetCardByIdOutput,
 } from "@kan/api/types";
-import { authClient } from "@kan/auth/client";
-
+import { useSession } from "~/hooks/useSession";
 import Avatar from "~/components/Avatar";
 import { useLocalisation } from "~/hooks/useLocalisation";
 import { api } from "~/utils/api";
@@ -380,7 +379,7 @@ const ActivityList = ({
   isViewOnly?: boolean;
 }) => {
   const { dateLocale } = useLocalisation();
-  const { data: sessionData } = authClient.useSession();
+  const { data: sessionData } = useSession();
   const utils = api.useUtils();
   const [allActivities, setAllActivities] = useState<
     GetCardActivitiesOutput["activities"]

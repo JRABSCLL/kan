@@ -12,13 +12,25 @@ import { configuredProviders } from "./providers";
 
 export const initAuth = (db: dbClient) => {
   const baseURL = env("NEXT_PUBLIC_BASE_URL") || env("BETTER_AUTH_URL");
-  const trustedOrigins =
+  const trustedOriginsEnv =
     env("BETTER_AUTH_TRUSTED_ORIGINS")?.split(",").filter(Boolean) ?? [];
+
+  // En desarrollo/preview con dominios temporales, permitir requests desde cualquier origen
+  // En producción, usar solo los orígenes configurados
+  const isDevelopment = process.env.NODE_ENV === "development";
+  const trustedOrigins = isDevelopment
+    ? [
+        ...(baseURL ? [baseURL] : []),
+        ...trustedOriginsEnv,
+        "http://localhost:3000",
+        "http://localhost:3001",
+      ]
+    : [...(baseURL ? [baseURL] : []), ...trustedOriginsEnv];
 
   return betterAuth({
     secret: env("BETTER_AUTH_SECRET"),
     baseURL,
-    trustedOrigins: [...(baseURL ? [baseURL] : []), ...trustedOrigins],
+    trustedOrigins,
     database: drizzleAdapter(db, {
       provider: "pg",
       schema: {

@@ -9,9 +9,8 @@ import {
   TbLayoutSidebarRightExpand,
 } from "react-icons/tb";
 
-import { authClient } from "@kan/auth/client";
-
 import { useClickOutside } from "~/hooks/useClickOutside";
+import { useSession } from "~/hooks/useSession";
 import { useModal } from "~/providers/modal";
 import { useWorkspace, WorkspaceProvider } from "~/providers/workspace";
 import { api } from "~/utils/api";
@@ -47,7 +46,7 @@ export default function Dashboard({
   const { availableWorkspaces, hasLoaded } = useWorkspace();
   const router = useRouter();
 
-  const { data: session, isPending: sessionLoading } = authClient.useSession();
+  const { data: session, isPending: sessionLoading } = useSession();
   const { data: user, isLoading: userLoading } = api.user.getUser.useQuery(
     undefined,
     {

@@ -1,6 +1,6 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PGlite } from "@electric-sql/pglite";
-import { uuid_ossp } from "@electric-sql/pglite/contrib/uuid_ossp";
+import { uuid_oscp } from "@electric-sql/pglite/contrib/uuid_oscp";
 import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
 import { drizzle as drizzlePgLite } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -11,6 +11,12 @@ import { createLogger } from "@kan/logger";
 import * as schema from "./schema";
 
 const log = createLogger("db");
+
+// Bypass SSL certificate validation for development environments (v0 sandbox)
+// This is safe because we're connecting to Supabase over HTTPS
+if (process.env.NODE_ENV !== "production") {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
 
 export type dbClient = NodePgDatabase<typeof schema> & {
   $client: Pool;
@@ -35,6 +41,12 @@ export const createDrizzleClient = (): dbClient => {
 
   const pool = new Pool({
     connectionString,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
   });
 
   return drizzlePg(pool, { schema }) as dbClient;

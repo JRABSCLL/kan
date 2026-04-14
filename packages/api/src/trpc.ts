@@ -8,9 +8,9 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import type { dbClient } from "@kan/db/client";
-import { initAuth } from "@kan/auth/server";
 import { createDrizzleClient } from "@kan/db/client";
 import { createLogger } from "@kan/logger";
+import { createSupabaseServerClientFromHeaders } from "./lib/supabase";
 
 const log = createLogger("api");
 
@@ -46,31 +46,30 @@ export interface User {
   stripeCustomerId?: string | null | undefined;
 }
 
-const createAuthWithHeaders = (
-  auth: ReturnType<typeof initAuth>,
-  headers: Headers,
-) => {
+// Helper to get user from Supabase session
+const getSupabaseUser = async (headers: Headers): Promise<User | null> => {
+  const supabase = createSupabaseServerClientFromHeaders(headers);
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  if (error || !user) {
+    return null;
+  }
+
   return {
-    api: {
-      getSession: () => auth.api.getSession({ headers }),
-      signInMagicLink: (input: { email: string; callbackURL: string }) =>
-        auth.api.signInMagicLink({
-          headers,
-          body: { email: input.email, callbackURL: input.callbackURL },
-        }),
-      listActiveSubscriptions: (input: { workspacePublicId: string }) =>
-        auth.api.listActiveSubscriptions({
-          headers,
-          query: { referenceId: input.workspacePublicId },
-        }),
-    },
+    id: user.id,
+    name: user.user_metadata?.name ?? user.email?.split("@")[0] ?? "User",
+    email: user.email ?? "",
+    emailVerified: user.email_confirmed_at != null,
+    createdAt: new Date(user.created_at),
+    updatedAt: new Date(user.updated_at ?? user.created_at),
+    image: user.user_metadata?.avatar_url ?? null,
+    stripeCustomerId: null,
   };
 };
 
 interface CreateContextOptions {
   user: User | null | undefined;
   db: dbClient;
-  auth: ReturnType<typeof createAuthWithHeaders>;
   headers: Headers;
   transport?: "trpc" | "rest";
 }
@@ -79,7 +78,6 @@ export const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     user: opts.user,
     db: opts.db,
-    auth: opts.auth,
     headers: opts.headers,
     transport: opts.transport ?? "trpc",
     requestId: randomUUID(),
@@ -88,16 +86,12 @@ export const createInnerTRPCContext = (opts: CreateContextOptions) => {
 
 export const createTRPCContext = async ({ req }: CreateNextContextOptions) => {
   const db = createDrizzleClient();
-  const baseAuth = initAuth(db);
   const headers = new Headers(req.headers as Record<string, string>);
-  const auth = createAuthWithHeaders(baseAuth, headers);
-
-  const session = await auth.api.getSession();
+  const user = await getSupabaseUser(headers);
 
   return createInnerTRPCContext({
     db,
-    user: session?.user,
-    auth,
+    user,
     headers,
     transport: "trpc",
   });
@@ -105,16 +99,12 @@ export const createTRPCContext = async ({ req }: CreateNextContextOptions) => {
 
 export const createNextApiContext = async (req: NextApiRequest) => {
   const db = createDrizzleClient();
-  const baseAuth = initAuth(db);
   const headers = new Headers(req.headers as Record<string, string>);
-  const auth = createAuthWithHeaders(baseAuth, headers);
-
-  const session = await auth.api.getSession();
+  const user = await getSupabaseUser(headers);
 
   return createInnerTRPCContext({
     db,
-    user: session?.user,
-    auth,
+    user,
     headers,
     transport: "trpc",
   });
@@ -122,21 +112,18 @@ export const createNextApiContext = async (req: NextApiRequest) => {
 
 export const createRESTContext = async ({ req }: CreateNextContextOptions) => {
   const db = createDrizzleClient();
-  const baseAuth = initAuth(db);
   const headers = new Headers(req.headers as Record<string, string>);
-  const auth = createAuthWithHeaders(baseAuth, headers);
-
-  let session;
+  
+  let user = null;
   try {
-    session = await auth.api.getSession();
+    user = await getSupabaseUser(headers);
   } catch (error) {
     log.warn({ err: error }, "Failed to get session, treating as unauthenticated");
   }
 
   return createInnerTRPCContext({
     db,
-    user: session?.user,
-    auth,
+    user,
     headers,
     transport: "rest",
   });
