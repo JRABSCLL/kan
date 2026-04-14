@@ -132,7 +132,8 @@ export const workspaceMemberPermissionsRelations = relations(
   }),
 );
 
-export const slugs = pgTable("workspace_slugs", {
+export const slugs = pgTable("reserved_slugs", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   type: slugTypeEnum("type").notNull(),
 });
