@@ -216,6 +216,8 @@ export const workspaceRouter = createTRPCRouter({
       const userId = ctx.user?.id;
       const userEmail = ctx.user?.email;
 
+      console.log("[v0] workspace.create - Starting", { userId, userEmail, input });
+
       if (!userId || !userEmail)
         throw new TRPCError({
           message: `User not authenticated`,
@@ -233,12 +235,16 @@ export const workspaceRouter = createTRPCRouter({
       const workspacePublicId = generateUID();
       const workspaceSlug = input.slug ?? workspacePublicId;
 
+      console.log("[v0] workspace.create - Generated IDs", { workspacePublicId, workspaceSlug });
+
       if (input.slug) {
         const reservedOrPremiumWorkspaceSlug =
           await workspaceSlugRepo.getWorkspaceSlug(ctx.db, input.slug);
 
         const isWorkspaceSlugAvailable =
           await workspaceRepo.isWorkspaceSlugAvailable(ctx.db, input.slug);
+
+        console.log("[v0] workspace.create - Slug check", { reservedOrPremiumWorkspaceSlug, isWorkspaceSlugAvailable });
 
         if (reservedOrPremiumWorkspaceSlug) {
           throw new TRPCError({
@@ -255,22 +261,30 @@ export const workspaceRouter = createTRPCRouter({
         }
       }
 
-      const result = await workspaceRepo.create(ctx.db, {
-        publicId: workspacePublicId,
-        name: input.name,
-        slug: workspaceSlug,
-        createdBy: userId,
-        createdByEmail: userEmail,
-        ...(input.description && { description: input.description }),
-      });
-
-      if (!result.publicId)
-        throw new TRPCError({
-          message: `Unable to create workspace`,
-          code: "INTERNAL_SERVER_ERROR",
+      try {
+        console.log("[v0] workspace.create - About to call workspaceRepo.create");
+        const result = await workspaceRepo.create(ctx.db, {
+          publicId: workspacePublicId,
+          name: input.name,
+          slug: workspaceSlug,
+          createdBy: userId,
+          createdByEmail: userEmail,
+          ...(input.description && { description: input.description }),
         });
 
-      return result;
+        console.log("[v0] workspace.create - Result", result);
+
+        if (!result.publicId)
+          throw new TRPCError({
+            message: `Unable to create workspace`,
+            code: "INTERNAL_SERVER_ERROR",
+          });
+
+        return result;
+      } catch (error) {
+        console.error("[v0] workspace.create - Error", error);
+        throw error;
+      }
     }),
   update: protectedProcedure
     .meta({

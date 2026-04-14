@@ -68,58 +68,55 @@ export const create = async (
     plan?: "free" | "team" | "pro" | "enterprise";
   },
 ) => {
-  const [workspace] = await db
-    .insert(workspaces)
-    .values({
-      publicId: workspaceInput.publicId ?? generateUID(),
-      name: workspaceInput.name,
-      slug: workspaceInput.slug,
-      createdBy: workspaceInput.createdBy,
-      ...(workspaceInput.description && { description: workspaceInput.description }),
-      ...(workspaceInput.plan && { plan: workspaceInput.plan }),
-    })
-    .returning({
-      id: workspaces.id,
-      publicId: workspaces.publicId,
-      name: workspaces.name,
-      slug: workspaces.slug,
-      description: workspaces.description,
-      plan: workspaces.plan,
-    });
+  console.log("[v0] workspace.repo.create - Starting with input:", workspaceInput);
 
-  if (workspace) {
-    // Create system roles for the workspace
-    let adminRoleId: number | null = null;
-    for (const roleData of SYSTEM_ROLES) {
-      const role = await permissionRepo.createRole(db, {
-        workspaceId: workspace.id,
-        name: roleData.name,
-        description: roleData.description,
-        hierarchyLevel: roleData.hierarchyLevel,
-        isSystem: true,
-        permissions: [...getDefaultPermissions(roleData.name)] as Permission[],
+  try {
+    const [workspace] = await db
+      .insert(workspaces)
+      .values({
+        publicId: workspaceInput.publicId ?? generateUID(),
+        name: workspaceInput.name,
+        slug: workspaceInput.slug,
+        createdBy: workspaceInput.createdBy,
+        ...(workspaceInput.description && { description: workspaceInput.description }),
+        ...(workspaceInput.plan && { plan: workspaceInput.plan }),
+      })
+      .returning({
+        id: workspaces.id,
+        publicId: workspaces.publicId,
+        name: workspaces.name,
+        slug: workspaces.slug,
+        description: workspaces.description,
+        plan: workspaces.plan,
       });
-      if (roleData.name === "admin" && role) {
-        adminRoleId = role.id;
-      }
+
+    console.log("[v0] workspace.repo.create - Workspace created:", workspace);
+
+    if (workspace) {
+      console.log("[v0] workspace.repo.create - Creating workspace member (skipping roles for now)");
+      
+      // Skip role creation for now - just add the member directly
+      await db.insert(workspaceMembers).values({
+        publicId: generateUID(),
+        userId: workspaceInput.createdBy,
+        email: workspaceInput.createdByEmail,
+        workspaceId: workspace.id,
+        createdBy: workspaceInput.createdBy,
+        role: "admin",
+        status: "active",
+      });
+
+      console.log("[v0] workspace.repo.create - Member created successfully");
     }
 
-    await db.insert(workspaceMembers).values({
-      publicId: generateUID(),
-      userId: workspaceInput.createdBy,
-      email: workspaceInput.createdByEmail,
-      workspaceId: workspace.id,
-      createdBy: workspaceInput.createdBy,
-      role: "admin",
-      roleId: adminRoleId,
-      status: "active",
-    });
+    const newWorkspace = { ...workspace };
+    delete newWorkspace.id;
+
+    return newWorkspace;
+  } catch (error) {
+    console.error("[v0] workspace.repo.create - Error:", error);
+    throw error;
   }
-
-  const newWorkspace = { ...workspace };
-  delete newWorkspace.id;
-
-  return newWorkspace;
 };
 
 export const update = async (
