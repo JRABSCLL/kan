@@ -1,9 +1,5 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { PGlite } from "@electric-sql/pglite";
-import { uuid } from "@electric-sql/pglite/contrib/uuid";
 import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
-import { drizzle as drizzlePgLite } from "drizzle-orm/pglite";
-import { migrate } from "drizzle-orm/pglite/migrator";
 import { Pool } from "pg";
 
 import { createLogger } from "@kan/logger";
@@ -26,17 +22,9 @@ export const createDrizzleClient = (): dbClient => {
   const connectionString = process.env.POSTGRES_URL;
 
   if (!connectionString) {
-    log.warn("POSTGRES_URL not set, falling back to PGLite");
-
-    const client = new PGlite({
-      dataDir: "./pgdata",
-      extensions: { uuid },
-    });
-    const db = drizzlePgLite(client, { schema });
-
-    migrate(db, { migrationsFolder: "../../packages/db/migrations" });
-
-    return db as unknown as dbClient;
+    throw new Error(
+      "POSTGRES_URL environment variable is required for database connection"
+    );
   }
 
   const pool = new Pool({
