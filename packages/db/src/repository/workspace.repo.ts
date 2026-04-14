@@ -117,6 +117,7 @@ export const create = async (
         await db.insert(workspaceMembers).values({
           publicId: generateUID(),
           userId: workspaceInput.createdBy,
+          email: workspaceInput.createdByEmail,
           workspaceId: workspace.id,
           createdBy: workspaceInput.createdBy,
           role: "admin",
