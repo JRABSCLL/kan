@@ -93,20 +93,41 @@ export const create = async (
     console.log("[v0] workspace.repo.create - Workspace created:", workspace);
 
     if (workspace) {
-      console.log("[v0] workspace.repo.create - Creating workspace member (skipping roles for now)");
-      
-      // Skip role creation for now - just add the member directly
-      await db.insert(workspaceMembers).values({
-        publicId: generateUID(),
-        userId: workspaceInput.createdBy,
-        email: workspaceInput.createdByEmail,
-        workspaceId: workspace.id,
-        createdBy: workspaceInput.createdBy,
-        role: "admin",
-        status: "active",
-      });
+      console.log("[v0] workspace.repo.create - Creating system roles");
+      try {
+        // Create system roles for the workspace
+        let adminRoleId: number | null = null;
+        for (const roleData of SYSTEM_ROLES) {
+          console.log("[v0] workspace.repo.create - Creating role:", roleData.name);
+          const role = await permissionRepo.createRole(db, {
+            workspaceId: workspace.id,
+            name: roleData.name,
+            description: roleData.description,
+            hierarchyLevel: roleData.hierarchyLevel,
+            isSystem: true,
+            permissions: [...getDefaultPermissions(roleData.name)] as Permission[],
+          });
+          console.log("[v0] workspace.repo.create - Role created:", role);
+          if (roleData.name === "admin" && role) {
+            adminRoleId = role.id;
+          }
+        }
 
-      console.log("[v0] workspace.repo.create - Member created successfully");
+        console.log("[v0] workspace.repo.create - Creating workspace member with roleId:", adminRoleId);
+        await db.insert(workspaceMembers).values({
+          publicId: generateUID(),
+          userId: workspaceInput.createdBy,
+          workspaceId: workspace.id,
+          createdBy: workspaceInput.createdBy,
+          role: "admin",
+          roleId: adminRoleId,
+          status: "active",
+        });
+        console.log("[v0] workspace.repo.create - Member created successfully");
+      } catch (roleError) {
+        console.error("[v0] workspace.repo.create - Error creating roles:", roleError);
+        throw roleError;
+      }
     }
 
     const newWorkspace = { ...workspace };
