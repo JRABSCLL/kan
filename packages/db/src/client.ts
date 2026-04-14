@@ -1,6 +1,6 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { PGlite } from "@electric-sql/pglite";
-import { uuid_oscp } from "@electric-sql/pglite/contrib/uuid_oscp";
+import { uuid } from "@electric-sql/pglite/contrib/uuid";
 import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
 import { drizzle as drizzlePgLite } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -30,7 +30,7 @@ export const createDrizzleClient = (): dbClient => {
 
     const client = new PGlite({
       dataDir: "./pgdata",
-      extensions: { uuid_ossp },
+      extensions: { uuid },
     });
     const db = drizzlePgLite(client, { schema });
 
