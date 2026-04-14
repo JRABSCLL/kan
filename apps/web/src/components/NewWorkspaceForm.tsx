@@ -101,7 +101,11 @@ export function NewWorkspaceForm() {
   const isWorkspaceSlugAvailable = checkWorkspaceSlugAvailability.data;
 
   const createWorkspace = api.workspace.create.useMutation({
+    onMutate: (variables) => {
+      console.log("[v0] Creating workspace - Input:", variables);
+    },
     onSuccess: async (values, variables) => {
+      console.log("[v0] Workspace created successfully:", values);
       if (values.publicId && values.name) {
         void utils.workspace.all.invalidate();
         switchWorkspace({
@@ -153,7 +157,10 @@ export function NewWorkspaceForm() {
         closeModal();
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("[v0] Error creating workspace:", error);
+      console.error("[v0] Error message:", error.message);
+      console.error("[v0] Full error:", JSON.stringify(error, null, 2));
       showPopup({
         header: t`Unable to create workspace`,
         message: t`Please try again later, or contact customer support.`,
