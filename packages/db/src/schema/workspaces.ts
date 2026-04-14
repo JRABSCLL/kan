@@ -132,22 +132,9 @@ export const workspaceMemberPermissionsRelations = relations(
   }),
 );
 
-export const slugs = pgTable("reserved_slugs", {
-  id: bigserial("id", { mode: "number" }).primaryKey(),
-  slug: varchar("slug", { length: 255 }).notNull().unique(),
+export const slugs = pgTable("workspace_slugs", {
+  slug: varchar("slug", { length: 255 }).primaryKey().notNull(),
   type: slugTypeEnum("type").notNull(),
 });
 
-export const slugChecks = pgTable("workspace_slug_checks", {
-  id: bigserial("id", { mode: "number" }).primaryKey(),
-  slug: varchar("slug", { length: 255 }).notNull(),
-  available: boolean("available").notNull(),
-  reserved: boolean("reserved").notNull(),
-  workspaceId: bigint("workspaceId", { mode: "number" }).references(
-    () => workspaces.id,
-  ),
-  createdBy: uuid("createdBy").references(() => users.id, {
-    onDelete: "set null",
-  }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}).enableRLS();
+

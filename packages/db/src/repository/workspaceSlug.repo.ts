@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import type { dbClient } from "@kan/db/client";
-import { slugChecks, slugs } from "@kan/db/schema";
+import { slugs } from "@kan/db/schema";
 
 export const getWorkspaceSlug = (db: dbClient, slug: string) => {
   return db.query.slugs.findFirst({
@@ -14,18 +14,14 @@ export const getWorkspaceSlug = (db: dbClient, slug: string) => {
 };
 
 export const createWorkspaceSlugCheck = (
-  db: dbClient,
-  input: {
+  _db: dbClient,
+  _input: {
     slug: string;
     userId: string;
     available: boolean;
     reserved: boolean;
   },
 ) => {
-  return db.insert(slugChecks).values({
-    slug: input.slug,
-    available: input.available,
-    reserved: input.reserved,
-    createdBy: input.userId,
-  });
+  // Slug check tracking disabled - not needed for basic functionality
+  return Promise.resolve();
 };
